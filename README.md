@@ -1,6 +1,6 @@
 # REC ON FU - Infra & Web Reconnaissance
 
-REC ON FU es un módulo avanzado de recolección de información desarrollado en Python. Forma parte del ecosistema `CTF-Toolkit` y está diseñado para realizar una fase de reconocimiento (Footprinting) rápida y efectiva sobre objetivos en red local o dominios externos.
+REC ON FU es un módulo de recolección de información desarrollado en Python. Está diseñado para realizar una fase de reconocimiento (Footprinting) rápida y efectiva sobre objetivos en red local o dominios externos.
 
 ---
 
