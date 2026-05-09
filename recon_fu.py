@@ -202,7 +202,7 @@ def main():
 
         # Este bloque cierra el programa.
         elif option == "4":
-            print(f"{YELLOW}[~] Cerrando Recon Fu...{RESET}")
+            print(f"{YELLOW}[~] Until we meet again, Hacker...{RESET}")
             break
 
         # Cualquier valor fuera del menu se marca como invalido.
