@@ -1,19 +1,12 @@
-import whois  # Para obtener información de registro de dominios.
-import socket  # Para operaciones de red a bajo nivel (DNS lookup).
-import requests  # Para realizar peticiones HTTP y analizar cabeceras.
-import os  # Para interactuar con el sistema operativo.
-import platform  # Para detectar si el script corre en Arch Linux o Windows.
-import subprocess  # Para ejecutar comandos externos como ping.
-from pyfiglet import Figlet  # Para generar banners ASCII dinámicos.
+import os
+import platform
+import socket
+import subprocess
 
+import requests
+import whois
 
-# ========== Función para limpiar pantalla ==========
-def limpiar_pantalla():
-    """Limpia la terminal según el Sistema Operativo detectado."""
-    os.system("cls" if platform.system() == "Windows" else "clear")
-
-
-# ========== Colores ANSI para el menú ==========
+# Estas constantes guardan colores ANSI simples para la terminal.
 RED = "\033[91m"
 GREEN = "\033[92m"
 CYAN = "\033[96m"
@@ -22,119 +15,202 @@ MAGENTA = "\033[95m"
 RESET = "\033[0m"
 
 
-# ========== Banner de la herramienta ==========
-def mostrar_banner():
-    banner = f"""{GREEN}
+def limpiar_pantalla():
+    # Esta funcion limpia la terminal segun el sistema operativo.
+    os.system("cls" if platform.system() == "Windows" else "clear")
 
+
+def mostrar_banner():
+    # Este bloque imprime el titulo principal del proyecto.
+    print(
+        f"""{GREEN}
 ██████╗ ███████╗ ██████╗    ██████╗ ███╗   ██╗    ███████╗██╗   ██╗
 ██╔══██╗██╔════╝██╔════╝   ██╔═══██╗████╗  ██║    ██╔════╝██║   ██║
 ██████╔╝█████╗  ██║        ██║   ██║██╔██╗ ██║    █████╗  ██║   ██║
 ██╔══██╗██╔══╝  ██║        ██║   ██║██║╚██╗██║    ██╔══╝  ██║   ██║
 ██║  ██║███████╗╚██████╗   ╚██████╔╝██║ ╚████║    ██║     ╚██████╔╝
 ╚═╝  ╚═╝╚══════╝ ╚═════╝    ╚═════╝ ╚═╝  ╚═══╝    ╚═╝      ╚═════╝ 
-            {MAGENTA}REC ON FU – orami 2025{RESET}
+            {MAGENTA}Recon Fu{RESET}
 """
-    print(banner)
+    )
 
 
-# ========== Función WHOIS ==========
-def whois_lookup(dominio):
-    """Consulta la base de datos WHOIS para obtener datos del propietario."""
+def pause():
+    # Esta funcion espera hasta que el usuario presione Enter.
+    input(f"\n{GREEN}Presiona Enter para continuar...{RESET}")
+
+
+def pedir_dominio(message):
+    # Esta funcion pide un dato al usuario y recorta espacios sobrantes.
+    return input(message).strip()
+
+
+def whois_lookup(domain):
+    # Si el dominio viene vacio, detenemos la funcion.
+    if domain == "":
+        print(f"{RED}[!] Debes ingresar un dominio valido.{RESET}")
+        return
+
     try:
-        resultado = whois.whois(dominio)
-        print(f"\n{CYAN}[+] Información WHOIS para {dominio}:{RESET}\n")
-        print(resultado)
-    except Exception as e:
-        print(f"{RED}[!] Error al realizar WHOIS: {e}{RESET}")
+        # Esta linea realiza la consulta WHOIS.
+        result = whois.whois(domain)
+    except Exception as error:
+        # Si falla la consulta, se muestra el error real.
+        print(f"{RED}[!] Error al realizar WHOIS: {error}{RESET}")
+        return
+
+    # Estas lineas imprimen el contenido recibido.
+    print(f"\n{CYAN}[+] Informacion WHOIS para {domain}:{RESET}\n")
+    print(result)
 
 
-# ========== Función DNS ==========
-def dns_lookup(dominio):
-    """Resuelve el nombre de dominio a una dirección IP."""
+def dns_lookup(domain):
+    # Si el dominio esta vacio, no tiene sentido continuar.
+    if domain == "":
+        print(f"{RED}[!] Debes ingresar un dominio valido.{RESET}")
+        return None
+
     try:
-        ip = socket.gethostbyname(dominio)
-        print(f"\n{CYAN}[+] Dirección IP para {dominio}: {RESET}{ip}")
-        return ip
+        # Esta linea resuelve el dominio a una IP.
+        ip = socket.gethostbyname(domain)
     except socket.gaierror:
+        # Si falla la resolucion, devolvemos None.
         print(f"{RED}[!] No se pudo resolver el dominio.{RESET}")
         return None
 
+    # Esta linea muestra la IP encontrada.
+    print(f"\n{CYAN}[+] Direccion IP para {domain}:{RESET} {ip}")
+    return ip
 
-# ========== Función detección de banner ==========
-def detectar_banner_http(dominio):
-    """Analiza las cabeceras HTTP para identificar tecnologías del servidor."""
+
+def detectar_banner_http(domain):
+    # Si el dominio esta vacio, se informa de inmediato.
+    if domain == "":
+        print(f"{RED}[!] Debes ingresar un dominio valido.{RESET}")
+        return
+
+    # Si falta el protocolo, se agrega uno basico.
+    url = domain
+    if not url.startswith("http://") and not url.startswith("https://"):
+        url = "http://" + url
+
     try:
-        # Añadimos http:// si no lo tiene para que requests no falle.
-        url = f"http://{dominio}" if not dominio.startswith("http") else dominio
-        # verify=False ignora errores de certificados SSL auto-firmados.
-        response = requests.get(url, timeout=5, verify=False)
-        print(f"\n{CYAN}[+] Encabezados HTTP para {dominio}:{RESET}\n")
-        for header, valor in response.headers.items():
-            print(f"{YELLOW}{header}:{RESET} {valor}")
-    except requests.RequestException as e:
-        print(f"{RED}[!] Error al conectar: {e}{RESET}")
+        # Esta linea intenta conectarse a la pagina.
+        response = requests.get(url, timeout=5)
+    except requests.RequestException as error:
+        # Si falla la peticion, mostramos el error.
+        print(f"{RED}[!] Error al conectar: {error}{RESET}")
+        return
+
+    # Estas lineas muestran las cabeceras HTTP encontradas.
+    print(f"\n{CYAN}[+] Encabezados HTTP para {url}:{RESET}\n")
+    for header, value in response.headers.items():
+        print(f"{YELLOW}{header}:{RESET} {value}")
 
 
-# ========== Función de ping y detección de OS ==========
 def ping_y_os(target):
-    """Implementación de detección de OS basada en TTL."""
-    print(f"\n{CYAN}[+] Haciendo ping a {target} para detección de OS...{RESET}\n")
-    param = "-n" if platform.system() == "Windows" else "-c"
+    # Si el objetivo viene vacio, detenemos la funcion.
+    if target == "":
+        print(f"{RED}[!] Debes ingresar un objetivo valido.{RESET}")
+        return
+
+    # Esta linea informa el inicio de la prueba.
+    print(f"\n{CYAN}[+] Haciendo ping a {target} para deteccion de OS...{RESET}\n")
+
+    # Esta variable adapta el parametro al sistema operativo.
+    count_parameter = "-n" if platform.system() == "Windows" else "-c"
+
     try:
-        # Ejecutamos el ping y analizamos el TTL.
-        res = subprocess.run(
-            ["ping", param, "4", target], capture_output=True, text=True
+        # Esta linea ejecuta el ping y captura su salida.
+        result = subprocess.run(
+            ["ping", count_parameter, "4", target],
+            capture_output=True,
+            text=True,
+            check=False,
         )
-        salida = res.stdout.lower()
-        print(res.stdout)
+    except FileNotFoundError:
+        # Si ping no existe, se informa al usuario.
+        print(f"{RED}[!] El comando ping no esta disponible.{RESET}")
+        return
+    except Exception as error:
+        # Este bloque informa errores inesperados.
+        print(f"{RED}[!] Error en el ping: {error}{RESET}")
+        return
 
-        if "ttl=128" in salida:
-            print(f"{CYAN}[*] OS Detectado: Windows (TTL=128){RESET}")
-        elif "ttl=64" in salida:
-            print(f"{CYAN}[*] OS Detectado: Linux/Unix (TTL=64){RESET}")
-    except Exception as e:
-        print(f"{RED}[!] Error en el ping: {e}{RESET}")
+    # Esta linea muestra la salida completa del comando.
+    print(result.stdout)
+
+    # Esta linea pasa la salida a minusculas para revisar el TTL.
+    output = result.stdout.lower()
+
+    # Si encontramos TTL de Windows, se informa al usuario.
+    if "ttl=128" in output:
+        print(f"{CYAN}[*] OS detectado de forma basica: Windows{RESET}")
+        return
+
+    # Si encontramos TTL de Linux o Unix, tambien se informa.
+    if "ttl=64" in output:
+        print(f"{CYAN}[*] OS detectado de forma basica: Linux o Unix{RESET}")
+        return
+
+    # Si no hay una coincidencia clara, se avisa.
+    print(f"{YELLOW}[*] No fue posible inferir el sistema operativo con el TTL.{RESET}")
 
 
-# ========== Menú principal ==========
 def mostrar_menu():
+    # Estas lineas imprimen las opciones disponibles del programa.
     print(f"{GREEN}[1]{RESET} WHOIS Lookup")
-    print(f"{GREEN}[2]{RESET} DNS Lookup & Detección de OS")
-    print(f"{GREEN}[3]{RESET} Detección de banner HTTP")
+    print(f"{GREEN}[2]{RESET} DNS Lookup y deteccion de OS")
+    print(f"{GREEN}[3]{RESET} Deteccion de encabezados HTTP")
     print(f"{GREEN}[4]{RESET} Salir")
 
 
-# ========== Punto de entrada principal ==========
 def main():
+    # Este bucle mantiene vivo el menu hasta que el usuario quiera salir.
     while True:
+        # Esta linea limpia la pantalla en cada vuelta.
         limpiar_pantalla()
+
+        # Esta linea imprime el banner principal.
         mostrar_banner()
-        print(f"{GREEN}[1]{RESET} WHOIS Lookup")
-        print(f"{GREEN}[2]{RESET} DNS Lookup & Detección de OS")
-        print(f"{GREEN}[3]{RESET} Detección de banner HTTP")
-        print(f"{GREEN}[4]{RESET} Salir")
 
-        opcion = input(f"\n{MAGENTA}[?]{RESET} Selecciona una opción: ")
+        # Esta linea muestra las opciones.
+        mostrar_menu()
 
-        if opcion == "1":
-            dom = input(f"{CYAN}[>]{RESET} Dominio para WHOIS: ")
-            whois_lookup(dom)
-        elif opcion == "2":
-            dom = input(f"{CYAN}[>]{RESET} Dominio para DNS/OS: ")
-            ip = dns_lookup(dom)
-            if ip:
+        # Esta linea pide la opcion del usuario.
+        option = input(f"\n{MAGENTA}[?]{RESET} Selecciona una opcion: ").strip()
+
+        # Este bloque maneja la opcion 1.
+        if option == "1":
+            domain = pedir_dominio(f"{CYAN}[>]{RESET} Dominio para WHOIS: ")
+            whois_lookup(domain)
+            pause()
+
+        # Este bloque maneja la opcion 2.
+        elif option == "2":
+            domain = pedir_dominio(f"{CYAN}[>]{RESET} Dominio para DNS y OS: ")
+            ip = dns_lookup(domain)
+            if ip is not None:
                 ping_y_os(ip)
-        elif opcion == "3":
-            dom = input(f"{CYAN}[>]{RESET} Dominio para Banner HTTP: ")
-            detectar_banner_http(dom)
-        elif opcion == "4":
-            print(f"{YELLOW}[~] Until we meet again, Hacker...{RESET}")
+            pause()
+
+        # Este bloque maneja la opcion 3.
+        elif option == "3":
+            domain = pedir_dominio(f"{CYAN}[>]{RESET} Dominio para HTTP: ")
+            detectar_banner_http(domain)
+            pause()
+
+        # Este bloque cierra el programa.
+        elif option == "4":
+            print(f"{YELLOW}[~] Cerrando Recon Fu...{RESET}")
             break
 
-        input(f"\n{GREEN}Presiona Enter para continuar...{RESET}")
+        # Cualquier valor fuera del menu se marca como invalido.
+        else:
+            print(f"{RED}[!] Opcion no valida.{RESET}")
+            pause()
 
 
-# ========== Ejecución ==========
 if __name__ == "__main__":
+    # Esta condicion ejecuta la aplicacion solo cuando el archivo se corre directamente.
     main()
-# Until we meet again, Hacker...

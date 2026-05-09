@@ -1,61 +1,38 @@
-# REC ON FU - Infra & Web Reconnaissance
+# Recon Fu
 
-REC ON FU es un módulo de recolección de información desarrollado en Python. Está diseñado para realizar una fase de reconocimiento (Footprinting) rápida y efectiva sobre objetivos en red local o dominios externos.
+Recon Fu es una herramienta de consola creada para practicar tareas simples de reconocimiento sobre dominios y servidores.
 
----
+## Funciones
 
-## Características Principales
+- Consulta WHOIS.
+- Resolución DNS básica.
+- Ping con detección aproximada de sistema operativo.
+- Lectura de encabezados HTTP.
 
-* **WHOIS Lookup**: Consulta datos de registro, fechas de expiración y proveedores de dominios.
-* **DNS & OS Fingerprinting**: Resuelve nombres de dominio a IP y analiza el valor TTL (Time To Live) del host para identificar si el objetivo es un sistema **Windows** o **Linux/Unix**.
-* **Banner Grabbing HTTP**: Recupera y analiza los encabezados de respuesta del servidor para identificar el software (Apache, Nginx, IIS), versiones y posibles configuraciones de seguridad.
-* **Interfaz Dinámica**: Utiliza arte ASCII generado en tiempo real y códigos de colores ANSI para una mejor experiencia en la terminal.
+## Requisitos
 
----
+- Python 3.11 o superior
 
-## Captura de Interfaz
-
-```text
-██████╗ ███████╗ ██████╗    ██████╗ ███╗   ██╗    ███████╗██╗   ██╗
-██╔══██╗██╔════╝██╔════╝   ██╔═══██╗████╗  ██║    ██╔════╝██║   ██║
-██████╔╝█████╗  ██║        ██║   ██║██╔██╗ ██║    █████╗  ██║   ██║
-██╔══██╗██╔══╝  ██║        ██║   ██║██║╚██╗██║    ██╔══╝  ██║   ██║
-██║  ██║███████╗╚██████╗   ╚██████╔╝██║ ╚████║    ██║     ╚██████╔╝
-╚═╝  ╚═╝╚══════╝ ╚═════╝    ╚═════╝ ╚═╝  ╚═══╝    ╚═╝      ╚═════╝ 
-            REC ON FU – orami 2025
-
-[1] WHOIS Lookup
-[2] DNS Lookup & Detección de OS
-[3] Detección de banner HTTP
-[4] Salir
-```
-
----
-
-## Instalación y Uso
-
-Se recomienda el uso de un entorno virtual para evitar conflictos con las librerías del sistema en distribuciones como Arch Linux.
+## Instalación
 
 ```bash
-# Crear y activar entorno virtual
-python -m venv venv
-source venv/bin/activate  # En Windows: .\venv\Scripts\activate
-
-# Instalar dependencias
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
+```
 
-# Ejecutar herramienta
+## Ejecución
+
+```bash
 python recon_fu.py
 ```
 
----
+## Estructura
 
-## Requisitos del Sistema
-* Python 3.10+
-* Conectividad a Internet (para WHOIS y DNS externos).
+- `recon_fu.py`: archivo principal del proyecto.
+- `requirements.txt`: dependencias de Python.
+- `img/`: capturas opcionales.
 
----
+## Nota
 
-## Autor
-**ORAMI (2025)** Estudiante de Ciberseguridad | Desarrollo Web
-```
+Este proyecto está pensado para aprendizaje y debe usarse solo en entornos permitidos.
