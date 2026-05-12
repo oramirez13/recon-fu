@@ -2,6 +2,13 @@
 
 Recon Fu es una herramienta de consola creada para practicar tareas simples de reconocimiento sobre dominios y servidores.
 
+## Screenshots
+
+![Recon Fu](img/Screenshot%202025-05-23%20153737.png)
+![Recon Fu](img/Screenshot%202025-05-23%20154120.png)
+![Recon Fu](img/Screenshot%202025-05-23%20154250.png)
+![Recon Fu](img/Screenshot_20260402_225214.png)
+
 ## Funciones
 
 - Consulta WHOIS.
