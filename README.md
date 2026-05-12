@@ -1,4 +1,4 @@
-# Recon Fu
+# Re-con Fu
 
 Recon Fu es una herramienta de consola creada para practicar tareas simples de reconocimiento sobre dominios y servidores.
 
