@@ -23,8 +23,8 @@ Recon Fu es una herramienta de consola creada para practicar tareas simples de r
 ## Instalación
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -37,6 +37,7 @@ python recon_fu.py
 ## Estructura
 
 - `recon_fu.py`: archivo principal del proyecto.
+- `tests/`: pruebas unitarias del proyecto.
 - `requirements.txt`: dependencias de Python.
 - `img/`: capturas opcionales.
 

@@ -14,10 +14,13 @@ YELLOW = "\033[93m"
 MAGENTA = "\033[95m"
 RESET = "\033[0m"
 
+# Esta variable guarda la ruta base del directorio donde esta este archivo.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def limpiar_pantalla():
-    # Esta funcion limpia la terminal segun el sistema operativo.
-    os.system("cls" if platform.system() == "Windows" else "clear")
+    # Esta funcion limpia la terminal usando subprocess en lugar de os.system.
+    subprocess.run("cls" if platform.system() == "Windows" else "clear", shell=True, check=False)
 
 
 def mostrar_banner():
@@ -41,8 +44,15 @@ def pause():
 
 
 def pedir_dominio(message):
-    # Esta funcion pide un dato al usuario y recorta espacios sobrantes.
-    return input(message).strip()
+    # Esta funcion pide un dominio al usuario y valida que no este vacio.
+    value = input(message).strip()
+
+    # Si el usuario no escribio nada, mostramos un aviso.
+    if value == "":
+        print(f"{RED}[!] Debes ingresar un dominio valido.{RESET}")
+        return ""
+
+    return value
 
 
 def whois_lookup(domain):
@@ -67,20 +77,32 @@ def whois_lookup(domain):
 def dns_lookup(domain):
     # Si el dominio esta vacio, no tiene sentido continuar.
     if domain == "":
-        print(f"{RED}[!] Debes ingresar un dominio valido.{RESET}")
         return None
 
     try:
-        # Esta linea resuelve el dominio a una IP.
-        ip = socket.gethostbyname(domain)
+        # Esta linea resuelve el dominio a multiples IPs usando getaddrinfo.
+        results = socket.getaddrinfo(domain, None)
+        # Se extraen unicamente las direcciones IPv4 unicas.
+        ips = list(set(r[4][0] for r in results if r[0] == socket.AF_INET))
     except socket.gaierror:
         # Si falla la resolucion, devolvemos None.
         print(f"{RED}[!] No se pudo resolver el dominio.{RESET}")
         return None
 
-    # Esta linea muestra la IP encontrada.
-    print(f"\n{CYAN}[+] Direccion IP para {domain}:{RESET} {ip}")
-    return ip
+    # Si no se encontro ninguna IPv4, informamos al usuario.
+    if not ips:
+        print(f"{RED}[!] No se encontro ninguna direccion IPv4.{RESET}")
+        return None
+
+    # Se muestra la primera IP encontrada (la principal).
+    print(f"\n{CYAN}[+] Direcciones IP para {domain}:{RESET}")
+
+    # Este ciclo imprime todas las IPs encontradas.
+    for ip in ips:
+        print(f"    {GREEN}{ip}{RESET}")
+
+    # Devolvemos la primera IP para uso en ping.
+    return ips[0]
 
 
 def detectar_banner_http(domain):
